@@ -1,370 +1,128 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+
 using UMA;
 
 public class UMACharacterCreator : MonoBehaviour 
 {
+	//Singleton
+	private static UMACharacterCreator m_Instance;
+
 	//Character sets (slots and overlays information)
 	public UMACrowdRandomSet[] _CharacterSets;
 
-	//Libraries
-	public RaceLibrary _RaceLibrary;
-	public SlotLibrary _SlotLibrary;
-	public OverlayLibrary _OverlayLibrary;
-
+	//UMA generator
 	public UMAGenerator _Generator;
 
+	//Atlas scale
 	public float _AtlasResolutionScale = 1;
+
+	//Libraries
+	private RaceLibrary _RaceLibrary;
+	private SlotLibrary _SlotLibrary;
+	private OverlayLibrary _OverlayLibrary;
 
 	//Current character
 	private bool _IsMale = false;
 	private bool _RandomDna = false;
-	private UMAData _CharacterData = null;
-	private UMADnaHumanoid _CharacterDna = null;
 	private bool _IsGenerating = true;
+
 	private float _SkinToneValue;
+	private UMAData _CharacterData = null;
 
 	void Awake() 
 	{
+		//Assign instance
+		m_Instance = this;
+
 		//Find if libraries not assigned
 		UMAContext context = UMAContext.FindInstance();
 		if (context != null)
 		{
-			if (_RaceLibrary == null) 
-				_RaceLibrary = context.raceLibrary;
-			
-			if (_SlotLibrary == null) 
-				_SlotLibrary = context.slotLibrary;
-			
-			if (_OverlayLibrary == null) 
-				_OverlayLibrary = context.overlayLibrary;
+			_RaceLibrary = context.raceLibrary;
+			_SlotLibrary = context.slotLibrary;
+			_OverlayLibrary = context.overlayLibrary;
 		}
 
 		//Create first one
-		CreateUMA(_IsMale);
+		CreateUMA();
 	}
 
-	void OnGUI() 
+	#region Static functions
+
+	public static bool IsGeneratingCharacter()
 	{
-		float startX = Screen.width / 18;
-		float startY = Screen.height / 18;
-		float width = Screen.width / 18 * 8;
-		float height = Screen.height / 18 * 16;
-
-		Rect box = new Rect(startX, startY, width, height);  
-		GUI.Box(box, "Character Creator");
-
-		float boxWidth = width - 20;
-		float boxHeight = height - 8;
-
-		Rect boxInside = new Rect(startX + 10, startY, boxWidth, boxHeight); 
-		GUILayout.BeginArea(boxInside);
-
-		GUILayout.Space(20);
-
-		GUILayout.BeginVertical();
-
-		GUIStyle centeredTextStyle = new GUIStyle("label");
-		centeredTextStyle.alignment = TextAnchor.MiddleCenter;
-		GUILayout.Label("Base", centeredTextStyle);
-
-		GUI.enabled = !_IsGenerating;
-
-		if (GUILayout.Button("Change Character Slots", GUILayout.Height(25))) 
-		{
-			
-		}
-
-		GUILayout.BeginHorizontal();
-
-		GUILayout.Label("Gender", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-
-		string gender = _IsMale ? "Male" : "Female";
-		if (GUILayout.Button(gender, GUILayout.Height(25))) 
-		{
-			_IsMale = !_IsMale;
-
-			_RandomDna = false;
-			CreateUMA(_IsMale);
-		}
-
-		GUILayout.EndHorizontal();
-
-		GUILayout.Label("Skin Tone", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-
-		float toneValue = GUILayout.HorizontalSlider(_SkinToneValue, 30f, 200f, GUILayout.Height(10));
-		if (toneValue != _SkinToneValue)
-		{
-			_SkinToneValue = toneValue;
-
-			StopAllCoroutines();
-			StartCoroutine(ChangeSkinTone(_SkinToneValue));
-		}
-
-		if (_CharacterDna != null)
-		{
-			GUILayout.Label("Height", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newHeight = GUILayout.HorizontalSlider(_CharacterDna.height, 0f, 1.0f, GUILayout.Height(10));
-			if (newHeight != _CharacterDna.height)
-			{
-				_CharacterDna.height = newHeight;
-				ChangeCharacterShape();
-			}
-
-			GUILayout.BeginHorizontal();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Head Size", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newHeadSize = GUILayout.HorizontalSlider(_CharacterDna.headSize, 0f, 1.0f, GUILayout.Height(10));
-			if (newHeadSize != _CharacterDna.headSize)
-			{
-				_CharacterDna.headSize = newHeadSize;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Head Width", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newHeadWidth = GUILayout.HorizontalSlider(_CharacterDna.headWidth, 0f, 1.0f, GUILayout.Height(10));
-			if (newHeadWidth != _CharacterDna.headWidth)
-			{
-				_CharacterDna.headWidth = newHeadWidth;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Upper Muscle", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newUpperMuscle = GUILayout.HorizontalSlider(_CharacterDna.upperMuscle, 0f, 1.0f, GUILayout.Height(10));
-			if (newUpperMuscle != _CharacterDna.upperMuscle)
-			{
-				_CharacterDna.upperMuscle = newUpperMuscle;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.EndHorizontal();
-			
-			GUILayout.BeginHorizontal();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Upper Weight", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newUpperWeight = GUILayout.HorizontalSlider(_CharacterDna.upperWeight, 0f, 1.0f, GUILayout.Height(10));
-			if (newUpperWeight != _CharacterDna.upperWeight)
-			{
-				_CharacterDna.upperWeight = newUpperWeight;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Lower Weight", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newLowerWeight = GUILayout.HorizontalSlider(_CharacterDna.lowerWeight, 0f, 1.0f, GUILayout.Height(10));
-			if (newLowerWeight != _CharacterDna.lowerWeight)
-			{
-				_CharacterDna.lowerWeight = newLowerWeight;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Lower Muscle", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newLowerMuscle = GUILayout.HorizontalSlider(_CharacterDna.lowerMuscle, 0f, 1.0f, GUILayout.Height(10));
-			if (newLowerMuscle != _CharacterDna.lowerMuscle)
-			{
-				_CharacterDna.lowerMuscle = newLowerMuscle;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginHorizontal();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Breast", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newBreast = GUILayout.HorizontalSlider(_CharacterDna.breastSize, 0f, 1.0f, GUILayout.Height(10));
-			if (newBreast != _CharacterDna.breastSize)
-			{
-				_CharacterDna.breastSize = newBreast;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Belly", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newBelly = GUILayout.HorizontalSlider(_CharacterDna.belly, 0f, 1.0f, GUILayout.Height(10));
-			if (newBelly != _CharacterDna.belly)
-			{
-				_CharacterDna.belly = newBelly;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-
-			GUILayout.BeginVertical();
-			GUILayout.Label("Waist", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newWaist = GUILayout.HorizontalSlider(_CharacterDna.waist, 0f, 1.0f, GUILayout.Height(10));
-			if (newWaist != _CharacterDna.waist)
-			{
-				_CharacterDna.waist = newWaist;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.EndHorizontal();
-			
-			GUILayout.BeginHorizontal();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Arm Length", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newArmLength = GUILayout.HorizontalSlider(_CharacterDna.armLength, 0f, 1.0f, GUILayout.Height(10));
-			if (newArmLength != _CharacterDna.armLength)
-			{
-				_CharacterDna.armLength = newArmLength;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Arm Width", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newArmWidth = GUILayout.HorizontalSlider(_CharacterDna.armWidth, 0f, 1.0f, GUILayout.Height(10));
-			if (newArmWidth != _CharacterDna.armWidth)
-			{
-				_CharacterDna.armWidth = newArmWidth;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Hand Size", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newHandSize = GUILayout.HorizontalSlider(_CharacterDna.handsSize, 0f, 1.0f, GUILayout.Height(10));
-			if (newHandSize != _CharacterDna.handsSize)
-			{
-				_CharacterDna.handsSize = newHandSize;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.EndHorizontal();
-			
-			GUILayout.BeginHorizontal();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Forearm Length", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newForearmLength = GUILayout.HorizontalSlider(_CharacterDna.forearmLength, 0f, 1.0f, GUILayout.Height(10));
-			if (newForearmLength != _CharacterDna.forearmLength)
-			{
-				_CharacterDna.forearmLength = newForearmLength;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Forearm Width", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newForearmWidth = GUILayout.HorizontalSlider(_CharacterDna.forearmWidth, 0f, 1.0f, GUILayout.Height(10));
-			if (newForearmWidth != _CharacterDna.forearmWidth)
-			{
-				_CharacterDna.forearmWidth = newForearmWidth;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Gluteus Size", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newGluteusSize = GUILayout.HorizontalSlider(_CharacterDna.gluteusSize, 0f, 1.0f, GUILayout.Height(10));
-			if (newGluteusSize != _CharacterDna.gluteusSize)
-			{
-				_CharacterDna.gluteusSize = newGluteusSize;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.EndHorizontal();
-			
-			GUILayout.BeginHorizontal();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Feet Size", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newFeetSize = GUILayout.HorizontalSlider(_CharacterDna.feetSize, 0f, 1.0f, GUILayout.Height(10));
-			if (newFeetSize != _CharacterDna.feetSize)
-			{
-				_CharacterDna.feetSize = newFeetSize;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Leg Size", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newLegsSize = GUILayout.HorizontalSlider(_CharacterDna.legsSize, 0f, 1.0f, GUILayout.Height(10));
-			if (newLegsSize != _CharacterDna.legsSize)
-			{
-				_CharacterDna.legsSize = newLegsSize;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-			
-			GUILayout.BeginVertical();
-			GUILayout.Label("Leg Separation", GUILayout.Width(boxWidth / 4), GUILayout.Height(25));
-			float newLegSeparation = GUILayout.HorizontalSlider(_CharacterDna.legSeparation, 0f, 1.0f, GUILayout.Height(10));
-			if (newLegSeparation != _CharacterDna.legSeparation)
-			{
-				_CharacterDna.legSeparation = newLegSeparation;
-				ChangeCharacterShape();
-			}
-			GUILayout.EndVertical();
-
-			GUILayout.EndHorizontal();
-
-			GUILayout.BeginVertical();
-			GUILayout.Label("Face Details", centeredTextStyle);
-			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Upper", GUILayout.Height(22))) 
-			{
-				
-			}
-			if (GUILayout.Button("Middle", GUILayout.Height(22))) 
-			{
-				
-			}
-			if (GUILayout.Button("Lower", GUILayout.Height(22))) 
-			{
-				
-			}
-			GUILayout.EndHorizontal();
-			GUILayout.EndVertical();
-		}
-
-		GUILayout.FlexibleSpace();
-
-		if (GUILayout.Button("Randomize"))
-		{
-			_RandomDna = true;
-			CreateUMA(_IsMale);
-		}
-
-		if (GUILayout.Button("Save Character", GUILayout.Height(28)))
-		{
-
-		}
-
-		GUI.enabled = true;
-
-		GUILayout.EndVertical();
-
-		GUILayout.EndArea();
+		if (m_Instance != null)
+			return m_Instance._IsGenerating;
+		else 
+			return true;
 	}
+
+	public static bool IsCurrentCharacterMale()
+	{
+		if (m_Instance != null)
+			return m_Instance._IsMale;
+		else 
+			return false;
+	}
+
+	public static void CreateCharacter(bool male, bool randomDna)
+	{
+		if (m_Instance != null)
+		{
+			m_Instance._IsMale = male;
+			m_Instance._RandomDna = randomDna;
+
+			m_Instance.CreateUMA();
+		}
+	}
+
+	public static UMADnaHumanoid GetCharacterDna()
+	{
+		if (m_Instance != null && m_Instance._CharacterData != null)
+		{
+			UMADnaHumanoid umaDna = m_Instance._CharacterData.umaRecipe.umaDna[typeof(UMADnaHumanoid)] as UMADnaHumanoid;
+			return umaDna;
+		}
+
+		return null;
+	}
+
+	public static float GetCharacterSkinTone()
+	{
+		if (m_Instance != null && m_Instance._CharacterData != null)
+		{
+			return m_Instance._SkinToneValue;
+		}
+
+		return 0f;
+	}
+
+	public static void ChangeCharacterSkinTone(float tone)
+	{
+		if (m_Instance != null)
+			m_Instance.ChangeSkinTone(tone);
+	}
+
+	public static void ChangeCharacterShape()
+	{
+		if (m_Instance != null)
+			m_Instance.ChangeShape();
+	}
+
+	#endregion
 
 	#region UMA generation
 
-	private void CreateUMA(bool male)
+	private void CreateUMA()
 	{
 		if (_CharacterData != null)
 			Destroy(_CharacterData.gameObject);
 
 		_IsGenerating = true;
 
-		GameObject go = new GameObject("Character");
+		GameObject go = new GameObject("UMACharacter");
 		go.transform.parent = transform;
 
 		UMADynamicAvatar umaDynamicAvatar = go.AddComponent<UMADynamicAvatar>();
@@ -415,8 +173,6 @@ public class UMACharacterCreator : MonoBehaviour
 			UMADnaHumanoid umaDna = umaData.umaRecipe.umaDna[typeof(UMADnaHumanoid)] as UMADnaHumanoid;
 			tempCollider.height = (umaDna.height + 0.5f) * 2 + 0.1f;
 			tempCollider.center = new Vector3(0,tempCollider.height * 0.5f - 0.04f,0);
-
-			_CharacterDna = umaDna;
 		}
 
 		//Add mouse rotate for demo
@@ -594,10 +350,8 @@ public class UMACharacterCreator : MonoBehaviour
 
 	#region Base changer
 
-	private IEnumerator ChangeSkinTone(float tone)
+	private void ChangeSkinTone(float tone)
 	{
-		yield return new WaitForSeconds(0.5f);
-
 		//Check the race first
 		string name = _CharacterData.myRenderer.name;
 		UMACrowdRandomSet characterSet = null;
@@ -611,7 +365,7 @@ public class UMACharacterCreator : MonoBehaviour
 
 		//Return if non-exists
 		if (characterSet == null)
-			yield break;
+			return;
 
 		//New Color
 		Color skinColor = CalculateSkinTone(tone);
@@ -638,8 +392,6 @@ public class UMACharacterCreator : MonoBehaviour
 				}
 			}
 		}
-
-		yield return null;
 	}
 
 	private Color CalculateSkinTone(float tone)
@@ -654,7 +406,7 @@ public class UMACharacterCreator : MonoBehaviour
 		return skinColor;
 	}
 
-	private void ChangeCharacterShape()
+	private void ChangeShape()
 	{
 		_CharacterData.isShapeDirty = true;
 		_CharacterData.Dirty();
