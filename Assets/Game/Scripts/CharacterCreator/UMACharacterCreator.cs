@@ -7,7 +7,7 @@ using UMA;
 public class UMACharacterCreator : MonoBehaviour 
 {
 	//Singleton
-	private static UMACharacterCreator m_Instance;
+	private static UMACharacterCreator s_Instance;
 
 	//Character sets (slots and overlays information)
 	public UMACrowdRandomSet[] _CharacterSets;
@@ -34,7 +34,7 @@ public class UMACharacterCreator : MonoBehaviour
 	void Awake() 
 	{
 		//Assign instance
-		m_Instance = this;
+		s_Instance = this;
 
 		//Find if libraries not assigned
 		UMAContext context = UMAContext.FindInstance();
@@ -53,36 +53,36 @@ public class UMACharacterCreator : MonoBehaviour
 
 	public static bool IsGeneratingCharacter()
 	{
-		if (m_Instance != null)
-			return m_Instance._IsGenerating;
+		if (s_Instance != null)
+			return s_Instance._IsGenerating;
 		else 
 			return true;
 	}
 
 	public static bool IsCurrentCharacterMale()
 	{
-		if (m_Instance != null)
-			return m_Instance._IsMale;
+		if (s_Instance != null)
+			return s_Instance._IsMale;
 		else 
 			return false;
 	}
 
 	public static void CreateCharacter(bool male, bool randomDna)
 	{
-		if (m_Instance != null)
+		if (s_Instance != null)
 		{
-			m_Instance._IsMale = male;
-			m_Instance._RandomDna = randomDna;
+			s_Instance._IsMale = male;
+			s_Instance._RandomDna = randomDna;
 
-			m_Instance.CreateUMA();
+			s_Instance.CreateUMA();
 		}
 	}
 
 	public static UMADnaHumanoid GetCharacterDna()
 	{
-		if (m_Instance != null && m_Instance._CharacterData != null)
+		if (s_Instance != null && s_Instance._CharacterData != null)
 		{
-			UMADnaHumanoid umaDna = m_Instance._CharacterData.umaRecipe.umaDna[typeof(UMADnaHumanoid)] as UMADnaHumanoid;
+			UMADnaHumanoid umaDna = s_Instance._CharacterData.umaRecipe.umaDna[typeof(UMADnaHumanoid)] as UMADnaHumanoid;
 			return umaDna;
 		}
 
@@ -91,9 +91,9 @@ public class UMACharacterCreator : MonoBehaviour
 
 	public static float GetCharacterSkinTone()
 	{
-		if (m_Instance != null && m_Instance._CharacterData != null)
+		if (s_Instance != null && s_Instance._CharacterData != null)
 		{
-			return m_Instance._SkinToneValue;
+			return s_Instance._SkinToneValue;
 		}
 
 		return 0f;
@@ -101,14 +101,14 @@ public class UMACharacterCreator : MonoBehaviour
 
 	public static void ChangeCharacterSkinTone(float tone)
 	{
-		if (m_Instance != null)
-			m_Instance.ChangeSkinTone(tone);
+		if (s_Instance != null)
+			s_Instance.ChangeSkinTone(tone);
 	}
 
 	public static void ChangeCharacterShape()
 	{
-		if (m_Instance != null)
-			m_Instance.ChangeShape();
+		if (s_Instance != null)
+			s_Instance.ChangeShape();
 	}
 
 	#endregion

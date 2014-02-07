@@ -171,7 +171,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 215179440}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41fccb3bb18d245fcaa961e9c0c54618, type: 3}
+  m_Script: {fileID: 11500000, guid: 3677123e3325b451094531da09d4eaff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!4 &215179442
@@ -1139,6 +1139,7 @@ GameObject:
   - 92: {fileID: 1378902863}
   - 124: {fileID: 1378902862}
   - 81: {fileID: 1378902861}
+  - 114: {fileID: 1378902866}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1207,6 +1208,26 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
+--- !u!114 &1378902866
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1378902860}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a8f1dfaacf5e49739d1aea6ef983395, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _Camera: {fileID: 1378902864}
+  _CameraSmoothing: 7.5
+  ZoomPositions:
+  - Name: ZeroPosition
+    Position: {x: .800000012, y: 1.14999998, z: 2.29999995}
+    Rotation: {x: 5, y: 180, z: 0}
+  - Name: FacePosition
+    Position: {x: .140000001, y: 1.79999995, z: .600000024}
+    Rotation: {x: 354.200012, y: 180, z: 0}
 --- !u!1 &1453589691
 GameObject:
   m_ObjectHideFlags: 0

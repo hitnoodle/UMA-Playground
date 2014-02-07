@@ -18,6 +18,13 @@ public class UIBaseCharacter : MonoBehaviour
 		UMACharacterCreator.ChangeCharacterSkinTone(tone);
 	}
 
+	private void ZoomBack()
+	{
+		CameraZoom.onZoomFinished -= ZoomBack;
+		
+		CameraZoom.Zoom("ZeroPosition");
+	}
+
 	private void Update()
 	{
 		if (!_IsInitialized)
@@ -321,15 +328,18 @@ public class UIBaseCharacter : MonoBehaviour
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Upper", GUILayout.Height(22))) 
 			{
-				
+				CameraZoom.Zoom("FacePosition");
+				CameraZoom.onZoomFinished += ZoomBack;
 			}
 			if (GUILayout.Button("Middle", GUILayout.Height(22))) 
 			{
-				
+				CameraZoom.Zoom("FacePosition");
+				CameraZoom.onZoomFinished += ZoomBack;
 			}
 			if (GUILayout.Button("Lower", GUILayout.Height(22))) 
 			{
-				
+				CameraZoom.Zoom("FacePosition");
+				CameraZoom.onZoomFinished += ZoomBack;
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();

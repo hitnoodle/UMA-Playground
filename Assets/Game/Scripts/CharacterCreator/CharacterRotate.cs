@@ -16,12 +16,12 @@ public class CharacterRotate : MonoBehaviour
 	// Update is called once per frame
 	void Update () 
 	{
-#if UNITY_EDITOR
 		float x = Input.GetAxis("Horizontal");
 		if (x != 0)
 			_Transform.Rotate(0, x * -Speed * Time.deltaTime, 0);
 
 		/*
+#if UNITY_EDITOR
 		if (Input.GetMouseButton(0))
 		{
 			if(Input.GetAxis("Mouse X") > 0) 
@@ -35,7 +35,6 @@ public class CharacterRotate : MonoBehaviour
 			if (x != 0)
 				_Transform.Rotate(0, x * -Speed * Time.deltaTime, 0);
 		}
-		*/
 #elif UNITY_IPHONE
 		if (Input.touches.Length > 0) 
 		{
@@ -53,5 +52,6 @@ public class CharacterRotate : MonoBehaviour
 			}
 		}
 #endif
+		*/
 	}
 }
