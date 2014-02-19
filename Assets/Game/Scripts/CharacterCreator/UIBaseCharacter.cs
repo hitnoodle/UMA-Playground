@@ -18,11 +18,22 @@ public class UIBaseCharacter : MonoBehaviour
 		UMACharacterCreator.ChangeCharacterSkinTone(tone);
 	}
 
-	private void ZoomBack()
+	private void FaceUpperDetail()
 	{
-		CameraZoom.onZoomFinished -= ZoomBack;
-		
-		CameraZoom.Zoom("ZeroPosition");
+		CameraZoom.onZoomFinished -= FaceUpperDetail;
+		UICreatorManager.ChangeState(UICreatorState.FaceUpperDetail);
+	}
+
+	private void FaceMiddleDetail()
+	{
+		CameraZoom.onZoomFinished -= FaceMiddleDetail;
+		UICreatorManager.ChangeState(UICreatorState.FaceMiddleDetail);
+	}
+
+	private void FaceLowerDetail()
+	{
+		CameraZoom.onZoomFinished -= FaceLowerDetail;
+		UICreatorManager.ChangeState(UICreatorState.FaceLowerDetail);
 	}
 
 	private void Update()
@@ -329,17 +340,17 @@ public class UIBaseCharacter : MonoBehaviour
 			if (GUILayout.Button("Upper", GUILayout.Height(22))) 
 			{
 				CameraZoom.Zoom("FacePosition");
-				CameraZoom.onZoomFinished += ZoomBack;
+				CameraZoom.onZoomFinished += FaceUpperDetail;
 			}
 			if (GUILayout.Button("Middle", GUILayout.Height(22))) 
 			{
 				CameraZoom.Zoom("FacePosition");
-				CameraZoom.onZoomFinished += ZoomBack;
+				CameraZoom.onZoomFinished += FaceMiddleDetail;
 			}
 			if (GUILayout.Button("Lower", GUILayout.Height(22))) 
 			{
 				CameraZoom.Zoom("FacePosition");
-				CameraZoom.onZoomFinished += ZoomBack;
+				CameraZoom.onZoomFinished += FaceLowerDetail;
 			}
 			GUILayout.EndHorizontal();
 			GUILayout.EndVertical();

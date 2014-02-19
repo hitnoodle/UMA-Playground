@@ -96,6 +96,7 @@ public class CameraZoom : MonoBehaviour
 
 				s_Instance.StartCoroutine(s_Instance.Zooming());
 
+				found = true;
 				break;
 			}
 		}
